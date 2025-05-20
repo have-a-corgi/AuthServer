@@ -6,6 +6,12 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.UserDetailsManager;
 
@@ -13,17 +19,23 @@ import org.springframework.security.provisioning.UserDetailsManager;
 @Configuration
 public class SecurityConfig {
 
-
     @Bean
-    public UserDetailsManager authenticationManager() {
+    public RegisteredClientRepository registeredClientRepository() {
 
-        PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        UserDetails ud = User.builder()
-                .passwordEncoder(
-                        passwordEncoder::encode
+        RegisteredClient registeredClient = RegisteredClient.withId("messaging-client")
+                .clientId("messaging-client")
+                .clientSecret("{noop}secret")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                //.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+                .redirectUri("http://127.0.0.1:8080/login/oauth2/code/oidc-client")
+                .scope("openid")
+                .scope("read")
+                .clientSettings(
+                        ClientSettings.builder().requireAuthorizationConsent(true).build()
                 )
-                .username("admin").password("java").roles("ADMIN").build();
-        return new InMemoryUserDetailsManager(ud);
-
+                .build();
+        return new InMemoryRegisteredClientRepository(registeredClient);
     }
+
 }
