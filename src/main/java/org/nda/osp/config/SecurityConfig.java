@@ -43,6 +43,12 @@ public class SecurityConfig {
         return new InMemoryRegisteredClientRepository(registeredClient);
     }
 
+    /**
+     * PREVENT CSRF check
+     * @param http
+     * @return
+     * @throws Exception
+     */
     @Bean
     @Order(Integer.MIN_VALUE)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
